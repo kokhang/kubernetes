@@ -543,6 +543,15 @@ func validateVolumeSource(source *api.VolumeSource, fldPath *field.Path) field.E
 		}
 	}
 
+	if source.Rook != nil {
+		if numVolumes > 0 {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("rook"), "may not specify more than 1 volume type"))
+		} else {
+			numVolumes++
+			allErrs = append(allErrs, validateRookVolumeSource(source.Rook, fldPath.Child("rook"))...)
+		}
+	}
+
 	if numVolumes == 0 {
 		allErrs = append(allErrs, field.Required(fldPath, "must specify a volume type"))
 	}
@@ -1020,6 +1029,17 @@ func validateScaleIOVolumeSource(sio *api.ScaleIOVolumeSource, fldPath *field.Pa
 	return allErrs
 }
 
+func validateRookVolumeSource(rook *api.RookVolumeSource, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	if len(rook.Monitors) == 0 {
+		allErrs = append(allErrs, field.Required(fldPath.Child("monitors"), ""))
+	}
+	if len(rook.Image) == 0 {
+		allErrs = append(allErrs, field.Required(fldPath.Child("image"), ""))
+	}
+	return allErrs
+}
+
 // ValidatePersistentVolumeName checks that a name is appropriate for a
 // PersistentVolumeName object.
 var ValidatePersistentVolumeName = NameIsDNSSubdomain
@@ -1197,6 +1217,15 @@ func ValidatePersistentVolume(pv *api.PersistentVolume) field.ErrorList {
 		} else {
 			numVolumes++
 			allErrs = append(allErrs, validateScaleIOVolumeSource(pv.Spec.ScaleIO, specPath.Child("scaleIO"))...)
+		}
+	}
+
+	if pv.Spec.Rook != nil {
+		if numVolumes > 0 {
+			allErrs = append(allErrs, field.Forbidden(specPath.Child("rook"), "may not specify more than 1 volume type"))
+		} else {
+			numVolumes++
+			allErrs = append(allErrs, validateRookVolumeSource(pv.Spec.Rook, specPath.Child("rook"))...)
 		}
 	}
 

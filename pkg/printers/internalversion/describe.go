@@ -632,6 +632,8 @@ func describeVolumes(volumes []api.Volume, w *PrefixWriter, space string) {
 			printPortworxVolumeSource(volume.VolumeSource.PortworxVolume, w)
 		case volume.VolumeSource.ScaleIO != nil:
 			printScaleIOVolumeSource(volume.VolumeSource.ScaleIO, w)
+		case volume.VolumeSource.Rook != nil:
+			printRookVolumeSource(volume.VolumeSource.Rook, w)
 		default:
 			w.Write(LEVEL_1, "<unknown>\n")
 		}
@@ -807,6 +809,18 @@ func printScaleIOVolumeSource(sio *api.ScaleIOVolumeSource, w *PrefixWriter) {
 		sio.Gateway, sio.System, sio.ProtectionDomain, sio.StoragePool, sio.StorageMode, sio.VolumeName, sio.FSType, sio.ReadOnly)
 }
 
+func printRookVolumeSource(rook *api.RookVolumeSource, w *PrefixWriter) {
+	w.Write(LEVEL_2, "Type:\tRook (a persistent volume on Rook)\n"+
+		"    Monitors:\t%v\n"+
+		"    Image:\t%v\n"+
+		"    FSType:\t%v\n"+
+		"    Pool:\t%v\n"+
+		"    User:\t%v\n"+
+		"    SecretRef:\t%v\n"+
+		"    ReadOnly:\t%v\n",
+		rook.Monitors, rook.Image, rook.FSType, rook.Pool, rook.User, rook.SecretRef, rook.ReadOnly)
+}
+
 type PersistentVolumeDescriber struct {
 	clientset.Interface
 }
@@ -873,6 +887,8 @@ func (d *PersistentVolumeDescriber) Describe(namespace, name string, describerSe
 			printPortworxVolumeSource(pv.Spec.PortworxVolume, w)
 		case pv.Spec.ScaleIO != nil:
 			printScaleIOVolumeSource(pv.Spec.ScaleIO, w)
+		case pv.Spec.Rook != nil:
+			printRookVolumeSource(pv.Spec.Rook, w)
 		}
 
 		if events != nil {

@@ -315,6 +315,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_api_ResourceQuotaStatus_To_v1_ResourceQuotaStatus,
 		Convert_v1_ResourceRequirements_To_api_ResourceRequirements,
 		Convert_api_ResourceRequirements_To_v1_ResourceRequirements,
+		Convert_v1_RookVolumeSource_To_api_RookVolumeSource,
+		Convert_api_RookVolumeSource_To_v1_RookVolumeSource,
 		Convert_v1_SELinuxOptions_To_api_SELinuxOptions,
 		Convert_api_SELinuxOptions_To_v1_SELinuxOptions,
 		Convert_v1_ScaleIOVolumeSource_To_api_ScaleIOVolumeSource,
@@ -2714,6 +2716,7 @@ func autoConvert_v1_PersistentVolumeSource_To_api_PersistentVolumeSource(in *Per
 	out.PhotonPersistentDisk = (*api.PhotonPersistentDiskVolumeSource)(unsafe.Pointer(in.PhotonPersistentDisk))
 	out.PortworxVolume = (*api.PortworxVolumeSource)(unsafe.Pointer(in.PortworxVolume))
 	out.ScaleIO = (*api.ScaleIOVolumeSource)(unsafe.Pointer(in.ScaleIO))
+	out.Rook = (*api.RookVolumeSource)(unsafe.Pointer(in.Rook))
 	return nil
 }
 
@@ -2741,6 +2744,7 @@ func autoConvert_api_PersistentVolumeSource_To_v1_PersistentVolumeSource(in *api
 	out.PhotonPersistentDisk = (*PhotonPersistentDiskVolumeSource)(unsafe.Pointer(in.PhotonPersistentDisk))
 	out.PortworxVolume = (*PortworxVolumeSource)(unsafe.Pointer(in.PortworxVolume))
 	out.ScaleIO = (*ScaleIOVolumeSource)(unsafe.Pointer(in.ScaleIO))
+	out.Rook = (*RookVolumeSource)(unsafe.Pointer(in.Rook))
 	return nil
 }
 
@@ -3867,6 +3871,38 @@ func Convert_api_ResourceRequirements_To_v1_ResourceRequirements(in *api.Resourc
 	return autoConvert_api_ResourceRequirements_To_v1_ResourceRequirements(in, out, s)
 }
 
+func autoConvert_v1_RookVolumeSource_To_api_RookVolumeSource(in *RookVolumeSource, out *api.RookVolumeSource, s conversion.Scope) error {
+	out.Monitors = *(*[]string)(unsafe.Pointer(&in.Monitors))
+	out.Image = in.Image
+	out.FSType = in.FSType
+	out.Pool = in.Pool
+	out.User = in.User
+	out.SecretRef = (*api.ObjectReference)(unsafe.Pointer(in.SecretRef))
+	out.ReadOnly = in.ReadOnly
+	out.AttacherType = in.AttacherType
+	return nil
+}
+
+func Convert_v1_RookVolumeSource_To_api_RookVolumeSource(in *RookVolumeSource, out *api.RookVolumeSource, s conversion.Scope) error {
+	return autoConvert_v1_RookVolumeSource_To_api_RookVolumeSource(in, out, s)
+}
+
+func autoConvert_api_RookVolumeSource_To_v1_RookVolumeSource(in *api.RookVolumeSource, out *RookVolumeSource, s conversion.Scope) error {
+	out.Monitors = *(*[]string)(unsafe.Pointer(&in.Monitors))
+	out.Image = in.Image
+	out.FSType = in.FSType
+	out.Pool = in.Pool
+	out.User = in.User
+	out.SecretRef = (*ObjectReference)(unsafe.Pointer(in.SecretRef))
+	out.ReadOnly = in.ReadOnly
+	out.AttacherType = in.AttacherType
+	return nil
+}
+
+func Convert_api_RookVolumeSource_To_v1_RookVolumeSource(in *api.RookVolumeSource, out *RookVolumeSource, s conversion.Scope) error {
+	return autoConvert_api_RookVolumeSource_To_v1_RookVolumeSource(in, out, s)
+}
+
 func autoConvert_v1_SELinuxOptions_To_api_SELinuxOptions(in *SELinuxOptions, out *api.SELinuxOptions, s conversion.Scope) error {
 	out.User = in.User
 	out.Role = in.Role
@@ -4528,6 +4564,7 @@ func autoConvert_v1_VolumeSource_To_api_VolumeSource(in *VolumeSource, out *api.
 	out.Projected = (*api.ProjectedVolumeSource)(unsafe.Pointer(in.Projected))
 	out.PortworxVolume = (*api.PortworxVolumeSource)(unsafe.Pointer(in.PortworxVolume))
 	out.ScaleIO = (*api.ScaleIOVolumeSource)(unsafe.Pointer(in.ScaleIO))
+	out.Rook = (*api.RookVolumeSource)(unsafe.Pointer(in.Rook))
 	return nil
 }
 
@@ -4562,6 +4599,7 @@ func autoConvert_api_VolumeSource_To_v1_VolumeSource(in *api.VolumeSource, out *
 	out.Projected = (*ProjectedVolumeSource)(unsafe.Pointer(in.Projected))
 	out.PortworxVolume = (*PortworxVolumeSource)(unsafe.Pointer(in.PortworxVolume))
 	out.ScaleIO = (*ScaleIOVolumeSource)(unsafe.Pointer(in.ScaleIO))
+	out.Rook = (*RookVolumeSource)(unsafe.Pointer(in.Rook))
 	return nil
 }
 

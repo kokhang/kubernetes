@@ -1509,6 +1509,10 @@
      "scaleIO": {
       "$ref": "v1.ScaleIOVolumeSource",
       "description": "ScaleIO represents a ScaleIO persistent volume attached and mounted on Kubernetes nodes."
+     },
+     "rook": {
+      "$ref": "v1.RookVolumeSource",
+      "description": "Rook represents a rook volume attached and mounted on Kubernetes nodes."
      }
     }
    },
@@ -2337,6 +2341,85 @@
      "readOnly": {
       "type": "boolean",
       "description": "Defaults to false (read/write). ReadOnly here will force the ReadOnly setting in VolumeMounts."
+     }
+    }
+   },
+   "v1.RookVolumeSource": {
+    "id": "v1.RookVolumeSource",
+    "description": "RookVolumeSource represents a Rook volume that is persistend and attached to Kubernetes nodes.",
+    "required": [
+     "monitors",
+     "image"
+    ],
+    "properties": {
+     "monitors": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "A collection of monitors."
+     },
+     "image": {
+      "type": "string",
+      "description": "The block image name."
+     },
+     "fsType": {
+      "type": "string",
+      "description": "Filesystem type of the volume that you want to mount. Tip: Ensure that the filesystem type is supported by the host operating system. Examples: \"ext4\", \"xfs\", \"ntfs\". Implicitly inferred to be \"ext4\" if unspecified. More info: http://kubernetes.io/docs/user-guide/volumes#rbd"
+     },
+     "pool": {
+      "type": "string",
+      "description": "The pool name. Default is rook."
+     },
+     "user": {
+      "type": "string",
+      "description": "The user name. Default is admin."
+     },
+     "secretRef": {
+      "$ref": "v1.ObjectReference",
+      "description": "SecretRef is reference of the authentication secret for Rook user. Default is nil."
+     },
+     "readOnly": {
+      "type": "boolean",
+      "description": "ReadOnly here will force the ReadOnly setting in VolumeMounts. Defaults to false."
+     },
+     "attacherType": {
+      "type": "string",
+      "description": "Optional: AttacherType is client type to use for mapping Rook image to a block device, It can support \"krbd\",which will use the RBD kernel module; \"iscsi\"\" or \"nbd\". Default is \"krbd\"."
+     }
+    }
+   },
+   "v1.ObjectReference": {
+    "id": "v1.ObjectReference",
+    "description": "ObjectReference contains enough information to let you inspect or modify the referred object.",
+    "properties": {
+     "kind": {
+      "type": "string",
+      "description": "Kind of the referent. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#types-kinds"
+     },
+     "namespace": {
+      "type": "string",
+      "description": "Namespace of the referent. More info: http://kubernetes.io/docs/user-guide/namespaces"
+     },
+     "name": {
+      "type": "string",
+      "description": "Name of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#names"
+     },
+     "uid": {
+      "type": "string",
+      "description": "UID of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#uids"
+     },
+     "apiVersion": {
+      "type": "string",
+      "description": "API version of the referent."
+     },
+     "resourceVersion": {
+      "type": "string",
+      "description": "Specific resourceVersion to which this reference is made, if any. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#concurrency-control-and-consistency"
+     },
+     "fieldPath": {
+      "type": "string",
+      "description": "If referring to a piece of an object instead of an entire object, this string should contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2]. For example, if the object reference is to a container within a pod, this would take on a value like: \"spec.containers{name}\" (where \"name\" refers to the name of the container that triggered the event) or if no container name is specified \"spec.containers[2]\" (container with index 2 in this pod). This syntax is chosen only to have some well-defined way of referencing a part of an object."
      }
     }
    },

@@ -10995,6 +10995,50 @@
      }
     }
    },
+   "io.k8s.kubernetes.pkg.api.v1.RookVolumeSource": {
+    "description": "RookVolumeSource represents a Rook volume that is persistend and attached to Kubernetes nodes.",
+    "required": [
+     "monitors",
+     "image"
+    ],
+    "properties": {
+     "attacherType": {
+      "description": "Optional: AttacherType is client type to use for mapping Rook image to a block device, It can support \"krbd\",which will use the RBD kernel module; \"iscsi\"\" or \"nbd\". Default is \"krbd\".",
+      "type": "string"
+     },
+     "fsType": {
+      "description": "Filesystem type of the volume that you want to mount. Tip: Ensure that the filesystem type is supported by the host operating system. Examples: \"ext4\", \"xfs\", \"ntfs\". Implicitly inferred to be \"ext4\" if unspecified. More info: http://kubernetes.io/docs/user-guide/volumes#rbd",
+      "type": "string"
+     },
+     "image": {
+      "description": "The block image name.",
+      "type": "string"
+     },
+     "monitors": {
+      "description": "A collection of monitors.",
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "pool": {
+      "description": "The pool name. Default is rook.",
+      "type": "string"
+     },
+     "readOnly": {
+      "description": "ReadOnly here will force the ReadOnly setting in VolumeMounts. Defaults to false.",
+      "type": "boolean"
+     },
+     "secretRef": {
+      "description": "SecretRef is reference of the authentication secret for Rook user. Default is nil.",
+      "$ref": "#/definitions/io.k8s.kubernetes.pkg.api.v1.ObjectReference"
+     },
+     "user": {
+      "description": "The user name. Default is admin.",
+      "type": "string"
+     }
+    }
+   },
    "io.k8s.kubernetes.pkg.api.v1.SELinuxOptions": {
     "description": "SELinuxOptions are the labels to be applied to the container",
     "properties": {
@@ -11555,6 +11599,10 @@
      "rbd": {
       "description": "RBD represents a Rados Block Device mount on the host that shares a pod's lifetime. More info: http://releases.k8s.io/HEAD/examples/volumes/rbd/README.md",
       "$ref": "#/definitions/io.k8s.kubernetes.pkg.api.v1.RBDVolumeSource"
+     },
+     "rook": {
+      "description": "Rook represents a rook volume attached and mounted on Kubernetes nodes.",
+      "$ref": "#/definitions/io.k8s.kubernetes.pkg.api.v1.RookVolumeSource"
      },
      "scaleIO": {
       "description": "ScaleIO represents a ScaleIO persistent volume attached and mounted on Kubernetes nodes.",

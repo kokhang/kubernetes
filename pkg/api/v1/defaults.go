@@ -387,3 +387,15 @@ func SetDefaults_ScaleIOVolumeSource(obj *ScaleIOVolumeSource) {
 		obj.FSType = "xfs"
 	}
 }
+
+func SetDefaults_RookVolumeSource(obj *RookVolumeSource) {
+	if obj.Pool == "" {
+		obj.Pool = "rook"
+	}
+	if obj.User == "" {
+		obj.User = "admin"
+	}
+	if obj.AttacherType == "" {
+		obj.AttacherType = "krbd"
+	}
+}

@@ -334,6 +334,9 @@ type VolumeSource struct {
 	// ScaleIO represents a ScaleIO persistent volume attached and mounted on Kubernetes nodes.
 	// +optional
 	ScaleIO *ScaleIOVolumeSource `json:"scaleIO,omitempty" protobuf:"bytes,25,opt,name=scaleIO"`
+	// Rook represents a rook volume attached and mounted on Kubernetes nodes.
+	// +optional
+	Rook *RookVolumeSource `json:"rook,omitempty" protobuf:"bytes,27,opt,name=rook"`
 }
 
 // PersistentVolumeClaimVolumeSource references the user's PVC in the same namespace.
@@ -425,6 +428,9 @@ type PersistentVolumeSource struct {
 	// ScaleIO represents a ScaleIO persistent volume attached and mounted on Kubernetes nodes.
 	// +optional
 	ScaleIO *ScaleIOVolumeSource `json:"scaleIO,omitempty" protobuf:"bytes,19,opt,name=scaleIO"`
+	// Rook represents a Rook volume that is attached and mounted on Kubernetes nodes.
+	// +optional
+	Rook *RookVolumeSource `json:"rook,omitempty" protobuf:"bytes,20,opt,name=rook"`
 }
 
 const (
@@ -1177,6 +1183,42 @@ type ScaleIOVolumeSource struct {
 	// the ReadOnly setting in VolumeMounts.
 	// +optional
 	ReadOnly bool `json:"readOnly,omitempty" protobuf:"varint,10,opt,name=readOnly"`
+}
+
+// RookVolumeSource represents a Rook volume that is persistend and attached to Kubernetes nodes.
+type RookVolumeSource struct {
+	// A collection of monitors.
+	Monitors []string `json:"monitors" protobuf:"bytes,1,rep,name=monitors"`
+	// The block image name.
+	Image string `json:"image" protobuf:"bytes,2,opt,name=image"`
+	// Filesystem type of the volume that you want to mount.
+	// Tip: Ensure that the filesystem type is supported by the host operating system.
+	// Examples: "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
+	// More info: http://kubernetes.io/docs/user-guide/volumes#rbd
+	// TODO: how do we prevent errors in the filesystem from compromising the machine
+	// +optional
+	FSType string `json:"fsType,omitempty" protobuf:"bytes,3,opt,name=fsType"`
+	// The pool name.
+	// Default is rook.
+	// +optional
+	Pool string `json:"pool,omitempty" protobuf:"bytes,4,opt,name=pool"`
+	// The user name.
+	// Default is admin.
+	// +optional
+	User string `json:"user,omitempty" protobuf:"bytes,5,opt,name=user"`
+	// SecretRef is reference of the authentication secret for Rook user.
+	// Default is nil.
+	// +optional
+	SecretRef *ObjectReference `json:"secretRef,omitempty" protobuf:"bytes,6,opt,name=secretRef"`
+	// ReadOnly here will force the ReadOnly setting in VolumeMounts.
+	// Defaults to false.
+	// +optional
+	ReadOnly bool `json:"readOnly,omitempty" protobuf:"varint,7,opt,name=readOnly"`
+	// Optional: AttacherType is client type to use for mapping Rook image to a block device,
+	// It can support "krbd",which will use the RBD kernel module; "iscsi"" or "nbd".
+	// Default is "krbd".
+	// +optional
+	AttacherType string `json:"attacherType,omitempty" protobuf:"varint,8,opt,name=attacherType"`
 }
 
 // Adapts a ConfigMap into a volume.

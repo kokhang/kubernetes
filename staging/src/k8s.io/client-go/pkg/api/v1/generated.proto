@@ -2145,6 +2145,10 @@ message PersistentVolumeSource {
   // ScaleIO represents a ScaleIO persistent volume attached and mounted on Kubernetes nodes.
   // +optional
   optional ScaleIOVolumeSource scaleIO = 19;
+
+  // Rook represents a Rook volume that is attached and mounted on Kubernetes nodes.
+  // +optional
+  optional RookVolumeSource rook = 20;
 }
 
 // PersistentVolumeSpec is the specification of a persistent volume.
@@ -3194,6 +3198,49 @@ message ResourceRequirements {
   map<string, k8s.io.apimachinery.pkg.api.resource.Quantity> requests = 2;
 }
 
+// RookVolumeSource represents a Rook volume that is persistend and attached to Kubernetes nodes.
+message RookVolumeSource {
+  // A collection of monitors.
+  repeated string monitors = 1;
+
+  // The block image name.
+  optional string image = 2;
+
+  // Filesystem type of the volume that you want to mount.
+  // Tip: Ensure that the filesystem type is supported by the host operating system.
+  // Examples: "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
+  // More info: http://kubernetes.io/docs/user-guide/volumes#rbd
+  // TODO: how do we prevent errors in the filesystem from compromising the machine
+  // +optional
+  optional string fsType = 3;
+
+  // The pool name.
+  // Default is rook.
+  // +optional
+  optional string pool = 4;
+
+  // The user name.
+  // Default is admin.
+  // +optional
+  optional string user = 5;
+
+  // SecretRef is reference of the authentication secret for Rook user.
+  // Default is nil.
+  // +optional
+  optional ObjectReference secretRef = 6;
+
+  // ReadOnly here will force the ReadOnly setting in VolumeMounts.
+  // Defaults to false.
+  // +optional
+  optional bool readOnly = 7;
+
+  // Optional: AttacherType is client type to use for mapping Rook image to a block device,
+  // It can support "krbd",which will use the RBD kernel module; "iscsi"" or "nbd".
+  // Default is "krbd".
+  // +optional
+  optional string attacherType = 8;
+}
+
 // SELinuxOptions are the labels to be applied to the container
 message SELinuxOptions {
   // User is a SELinux user label that applies to the container.
@@ -3896,6 +3943,10 @@ message VolumeSource {
   // ScaleIO represents a ScaleIO persistent volume attached and mounted on Kubernetes nodes.
   // +optional
   optional ScaleIOVolumeSource scaleIO = 25;
+
+  // Rook represents a rook volume attached and mounted on Kubernetes nodes.
+  // +optional
+  optional RookVolumeSource rook = 27;
 }
 
 // Represents a vSphere volume resource.

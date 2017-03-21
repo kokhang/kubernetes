@@ -302,6 +302,9 @@ type VolumeSource struct {
 	// ScaleIO represents a ScaleIO persistent volume attached and mounted on Kubernetes nodes.
 	// +optional
 	ScaleIO *ScaleIOVolumeSource
+	// Rook represents a rook persistent volume attached and mounted on Kubernetes nodes.
+	// +optional
+	Rook *RookVolumeSource
 }
 
 // Similar to VolumeSource but meant for the administrator who creates PVs.
@@ -370,6 +373,9 @@ type PersistentVolumeSource struct {
 	// ScaleIO represents a ScaleIO persistent volume attached and mounted on Kubernetes nodes.
 	// +optional
 	ScaleIO *ScaleIOVolumeSource
+	// Rook represents a Rook persistent volume attached and mounted on Kubernetes nodes.
+	// +optional
+	Rook *RookVolumeSource
 }
 
 type PersistentVolumeClaimVolumeSource struct {
@@ -1095,6 +1101,38 @@ type ScaleIOVolumeSource struct {
 	// the ReadOnly setting in VolumeMounts.
 	// +optional
 	ReadOnly bool
+}
+
+// RookVolumeSource represents a Rook persisted volume.
+type RookVolumeSource struct {
+	// Required: Monitors is a collection of Rook monitors
+	Monitors []string
+	// Required: Image is the block image name
+	Image string
+	// Filesystem type to mount.
+	// Must be a filesystem type supported by the host operating system.
+	// Ex. "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
+	// TODO: how do we prevent errors in the filesystem from compromising the machine
+	// +optional
+	FSType string
+	// Optional: Pool is the Rook pool name,default is rook
+	// +optional
+	Pool string
+	// Optional: User is the Rook user name, default is admin
+	// +optional
+	User string
+	// Optional: SecretRef is reference of the authentication secret for Rook, default is nil.
+	// +optional
+	SecretRef *ObjectReference
+	// Optional: Defaults to false (read/write). ReadOnly here will force
+	// the ReadOnly setting in VolumeMounts.
+	// +optional
+	ReadOnly bool
+	// Optional: AttacherType is client type to use for mapping Rook image to a block device,
+	// It can support "krbd",which will use the RBD kernel module; "iscsi"" or "nbd".
+	// Default is "krbd".
+	// +optional
+	AttacherType string
 }
 
 // Adapts a ConfigMap into a volume.

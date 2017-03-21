@@ -178,6 +178,7 @@ func RegisterDeepCopies(scheme *runtime.Scheme) error {
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_api_ResourceQuotaSpec, InType: reflect.TypeOf(&ResourceQuotaSpec{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_api_ResourceQuotaStatus, InType: reflect.TypeOf(&ResourceQuotaStatus{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_api_ResourceRequirements, InType: reflect.TypeOf(&ResourceRequirements{})},
+		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_api_RookVolumeSource, InType: reflect.TypeOf(&RookVolumeSource{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_api_SELinuxOptions, InType: reflect.TypeOf(&SELinuxOptions{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_api_ScaleIOVolumeSource, InType: reflect.TypeOf(&ScaleIOVolumeSource{})},
 		conversion.GeneratedDeepCopyFunc{Fn: DeepCopy_api_Secret, InType: reflect.TypeOf(&Secret{})},
@@ -2078,6 +2079,13 @@ func DeepCopy_api_PersistentVolumeSource(in interface{}, out interface{}, c *con
 				return err
 			}
 		}
+		if in.Rook != nil {
+			in, out := &in.Rook, &out.Rook
+			*out = new(RookVolumeSource)
+			if err := DeepCopy_api_RookVolumeSource(*in, *out, c); err != nil {
+				return err
+			}
+		}
 		return nil
 	}
 }
@@ -2910,6 +2918,25 @@ func DeepCopy_api_ResourceRequirements(in interface{}, out interface{}, c *conve
 	}
 }
 
+func DeepCopy_api_RookVolumeSource(in interface{}, out interface{}, c *conversion.Cloner) error {
+	{
+		in := in.(*RookVolumeSource)
+		out := out.(*RookVolumeSource)
+		*out = *in
+		if in.Monitors != nil {
+			in, out := &in.Monitors, &out.Monitors
+			*out = make([]string, len(*in))
+			copy(*out, *in)
+		}
+		if in.SecretRef != nil {
+			in, out := &in.SecretRef, &out.SecretRef
+			*out = new(ObjectReference)
+			**out = **in
+		}
+		return nil
+	}
+}
+
 func DeepCopy_api_SELinuxOptions(in interface{}, out interface{}, c *conversion.Cloner) error {
 	{
 		in := in.(*SELinuxOptions)
@@ -3498,6 +3525,13 @@ func DeepCopy_api_VolumeSource(in interface{}, out interface{}, c *conversion.Cl
 			in, out := &in.ScaleIO, &out.ScaleIO
 			*out = new(ScaleIOVolumeSource)
 			if err := DeepCopy_api_ScaleIOVolumeSource(*in, *out, c); err != nil {
+				return err
+			}
+		}
+		if in.Rook != nil {
+			in, out := &in.Rook, &out.Rook
+			*out = new(RookVolumeSource)
+			if err := DeepCopy_api_RookVolumeSource(*in, *out, c); err != nil {
 				return err
 			}
 		}
