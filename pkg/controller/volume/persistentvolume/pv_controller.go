@@ -1249,7 +1249,6 @@ func (ctrl *PersistentVolumeController) provisionClaimOperation(claimObj interfa
 
 	claimClass := v1helper.GetPersistentVolumeClaimClass(claim)
 	glog.V(4).Infof("provisionClaimOperation [%s] started, class: %q", claimToClaimKey(claim), claimClass)
-
 	plugin, storageClass, err := ctrl.findProvisionablePlugin(claim)
 	if err != nil {
 		ctrl.eventRecorder.Event(claim, v1.EventTypeWarning, "ProvisioningFailed", err.Error())
@@ -1363,7 +1362,7 @@ func (ctrl *PersistentVolumeController) provisionClaimOperation(claimObj interfa
 			break
 		}
 		// Save failed, try again after a while.
-		glog.V(3).Infof("failed to save volume %q for claim %q: %v", volume.Name, claimToClaimKey(claim), err)
+		glog.V(3).Infof("failed to save volume %q for claim %q: %v: %v", volume.Name, claimToClaimKey(claim), err, volume)
 		time.Sleep(ctrl.createProvisionedPVInterval)
 	}
 
