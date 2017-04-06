@@ -29,6 +29,7 @@ import (
 	"math/rand"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -46,19 +47,30 @@ const (
 	kubeLockMagic   = "kubelet_lock_magic_"
 )
 
+const (
+	rbdSysBusPathDefault     = "/sys/bus/rbd"
+	rbdDevicesDir            = "devices"
+	rbdDevicePathPrefix      = "/dev/rbd"
+	devicePathPrefix         = "/dev/"
+	rbdAddNode               = "add"
+	rbdAddSingleMajorNode    = "add_single_major"
+	rbdRemoveNode            = "remove"
+	rbdRemoveSingleMajorNode = "remove_single_major"
+)
+
 // search /sys/bus for rbd device that matches given pool and image
 func getDevFromImageAndPool(pool, image string) (string, bool) {
 	// /sys/bus/rbd/devices/X/name and /sys/bus/rbd/devices/X/pool
-	sys_path := "/sys/bus/rbd/devices"
-	if dirs, err := ioutil.ReadDir(sys_path); err == nil {
+	sysPath := filepath.Join(rbdSysBusPathDefault, rbdDevicesDir)
+	if dirs, err := ioutil.ReadDir(sysPath); err == nil {
 		for _, f := range dirs {
 			// pool and name format:
 			// see rbd_pool_show() and rbd_name_show() at
 			// https://github.com/torvalds/linux/blob/master/drivers/block/rbd.c
 			name := f.Name()
 			// first match pool, then match name
-			po := path.Join(sys_path, name, "pool")
-			img := path.Join(sys_path, name, "name")
+			po := path.Join(sysPath, name, "pool")
+			img := path.Join(sysPath, name, "name")
 			exe := exec.New()
 			out, err := exe.Command("cat", po, img).CombinedOutput()
 			if err != nil {
@@ -69,7 +81,7 @@ func getDevFromImageAndPool(pool, image string) (string, bool) {
 				continue
 			}
 			// found a match, check if device exists
-			devicePath := "/dev/rbd" + name
+			devicePath := rbdDevicePathPrefix + name
 			if _, err := os.Lstat(devicePath); err == nil {
 				return devicePath, true
 			}
@@ -261,10 +273,24 @@ func (util *RBDUtil) AttachDisk(b rbdMounter) error {
 
 	devicePath, found := waitForPath(b.Pool, b.Image, 1)
 	if !found {
-		// modprobe
-		_, err = b.plugin.execCommand("modprobe", []string{"rbd"})
+
+		options := []string{"rbd"}
+		// check single major
+		addPath := filepath.Join(rbdSysBusPathDefault, rbdAddNode)
+		output, err = b.plugin.execCommand("modinfo", []string{"-F", "parm", "rbd"})
 		if err != nil {
-			return fmt.Errorf("rbd: failed to modprobe rbd error:%v", err)
+			return fmt.Errorf("rbd: failed to check for rbd module single_major param: %v", err)
+		}
+		matched, _ := regexp.MatchString("^single_major", string(output))
+		if matched {
+			addPath = filepath.Join(rbdSysBusPathDefault, rbdAddSingleMajorNode)
+			options = append(options, "single_major=Y")
+		}
+
+		// load kernel module
+		_, err = b.plugin.execCommand("modprobe", options)
+		if err != nil {
+			return fmt.Errorf("rbd: failed to modprobe %s error:%v", options, err)
 		}
 
 		// fence off other mappers
@@ -278,29 +304,25 @@ func (util *RBDUtil) AttachDisk(b rbdMounter) error {
 		// the json file remains invisible during rbd mount and thus won't be removed accidentally.
 		util.persistRBD(b, globalPDPath)
 
-		// rbd map
-		l := len(b.Mon)
-		// avoid mount storm, pick a host randomly
-		start := rand.Int() % l
-		// iterate all hosts until mount succeeds.
-		for i := start; i < start+l; i++ {
-			mon := b.Mon[i%l]
-			glog.V(1).Infof("rbd: map mon %s", mon)
-			if b.Secret != "" {
-				output, err = b.plugin.execCommand("rbd",
-					[]string{"map", b.Image, "--pool", b.Pool, "--id", b.Id, "-m", mon, "--key=" + b.Secret})
-			} else {
-				output, err = b.plugin.execCommand("rbd",
-					[]string{"map", b.Image, "--pool", b.Pool, "--id", b.Id, "-m", mon, "-k", b.Keyring})
-			}
-			if err == nil {
-				break
-			}
-			glog.V(1).Infof("rbd: map error %v %s", err, string(output))
-		}
+		addFile, err := os.OpenFile(addPath, os.O_WRONLY, 0200)
 		if err != nil {
-			return fmt.Errorf("rbd: map failed %v %s", err, string(output))
+			return fmt.Errorf("rbd: failed to open %s: %v", addPath, err)
 		}
+		defer addFile.Close()
+
+		// Generate rbd-add data. mon address list (comma separated), user name, secret, pool name, image name
+		rbdAddData := fmt.Sprintf("%s name=%s,secret=%s %s %s",
+			strings.Join(b.Mon, ","),
+			b.Id,
+			b.Secret,
+			b.Pool,
+			b.Image)
+
+		// write the rbd data string to the rbd add path
+		if _, err := addFile.Write([]byte(rbdAddData)); err != nil {
+			return fmt.Errorf("rbd: failed to write rbd add data. Map failed: %+v", err)
+		}
+
 		devicePath, found = waitForPath(b.Pool, b.Image, 10)
 		if !found {
 			return errors.New("Could not map image: Timeout after 10s")
@@ -324,10 +346,29 @@ func (util *RBDUtil) DetachDisk(c rbdUnmounter, mntPath string) error {
 	}
 	// if device is no longer used, see if can unmap
 	if cnt <= 1 {
+		var output []byte
 		// rbd unmap
-		_, err = c.plugin.execCommand("rbd", []string{"unmap", device})
+		rbdNum := strings.TrimPrefix(device, rbdDevicePathPrefix)
+
+		// check single major
+		removePath := filepath.Join(rbdSysBusPathDefault, rbdRemoveNode)
+		output, err = c.plugin.execCommand("modinfo", []string{"-F", "parm", "rbd"})
 		if err != nil {
-			return fmt.Errorf("rbd: failed to unmap device %s:Error: %v", device, err)
+			return fmt.Errorf("rbd: failed to check for rbd module single_major param: %v", err)
+		}
+		matched, _ := regexp.MatchString("^single_major", string(output))
+		if matched {
+			removePath = filepath.Join(rbdSysBusPathDefault, rbdRemoveSingleMajorNode)
+		}
+
+		// write the remove command to the rbd remove file handle
+		removeFile, err := os.OpenFile(removePath, os.O_WRONLY, 0200)
+		if err != nil {
+			return fmt.Errorf("rbd: failed to open %s: %v", removePath, err)
+		}
+		defer removeFile.Close()
+		if _, err := removeFile.Write([]byte(rbdNum)); err != nil {
+			return fmt.Errorf("rbd: failed to write rbd remove data. Unmap failed: %+v", err)
 		}
 
 		// load ceph and image/pool info to remove fencing
