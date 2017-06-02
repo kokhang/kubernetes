@@ -39,8 +39,8 @@ type rookAttacher struct {
 
 const (
 	tprGroup              = "rook.io"
-	tprVersion            = "v1"
-	tprKind               = "Volumeattach"
+	tprVersion            = "v1alpha1"
+	tprKind               = "Volume"
 	volumeAttachConfigMap = "rook-volume-attach"
 	devicePathKey         = "devicePath"
 	mountOptionsKey       = "mountOptions"

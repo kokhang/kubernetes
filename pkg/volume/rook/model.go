@@ -20,7 +20,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const attachmentPluralResources = "volumeattachs"
+const attachmentPluralResources = "volumes"
 
 type VolumeAttach struct {
 	metav1.TypeMeta   `json:",inline"`
